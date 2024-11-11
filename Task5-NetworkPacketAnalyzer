@@ -1,0 +1,44 @@
+from scapy.all import sniff
+from scapy.layers.inet import IP, TCP, UDP, ICMP
+import datetime
+
+def process_packet(packet):
+    # Capture only IP packets
+    if IP in packet:
+        ip_layer = packet[IP]
+        protocol = ""
+
+        # Determine protocol type
+        if packet.haslayer(TCP):
+            protocol = "TCP"
+            payload = packet[TCP].payload
+        elif packet.haslayer(UDP):
+            protocol = "UDP"
+            payload = packet[UDP].payload
+        elif packet.haslayer(ICMP):
+            protocol = "ICMP"
+            payload = packet[ICMP].payload
+        else:
+            protocol = "Other"
+            payload = None
+
+        # Display packet information
+        print("\n=== Packet Capture ===")
+        print(f"Timestamp: {datetime.datetime.now()}")
+        print(f"Source IP: {ip_layer.src}")
+        print(f"Destination IP: {ip_layer.dst}")
+        print(f"Protocol: {protocol}")
+
+        # Show payload if available
+        if payload:
+            print(f"Payload Data: {str(bytes(payload))[:50]}")  # Display first 50 bytes for brevity
+        else:
+            print("No Payload Data")
+
+def start_sniffing():
+    print("Starting packet sniffing (press Ctrl+C to stop)...")
+    sniff(filter="ip", prn=process_packet, store=False)
+
+# Run the sniffer
+if __name__ == "__main__":
+    start_sniffing()
